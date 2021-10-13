@@ -1,0 +1,41 @@
+﻿@model IEnumerable<SalesWebMvc.Models.Department>
+
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<h2>Departments</h2>
+
+<p>
+    <a asp-action="Create">Create New</a> @*@"asp-action" é o método que irá chamar o método do controlador importado, neste caso é o controlador "Departments"*@
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id) @*@"Html.DisplayNameFor() recebe uma expressão lambda que irá selecionar qual dado do model será exibido"*@
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) { // "@foreach" monta um for para cada item dentro da coleção, no caso a coleção é "Model"
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name) @* "@Html.DisplayFor" exibirá os itens selecionados dentro do model percorrido pelo for *@
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

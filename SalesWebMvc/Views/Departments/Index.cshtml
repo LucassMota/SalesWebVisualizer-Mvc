@@ -1,20 +1,17 @@
 ﻿@model IEnumerable<SalesWebMvc.Models.Department>
 
 @{
-    ViewData["Title"] = "Departments";
+    ViewData["Title"] = "Index";
 }
 
-<h2>Departments</h2>
+<h2>Index</h2>
 
 <p>
-    <a asp-action="Create">Create New</a> @*@"asp-action" é o método que irá chamar o método do controlador importado, neste caso é o controlador "Departments"*@
+    <a asp-action="Create">Create New</a>
 </p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Id) @*@"Html.DisplayNameFor() recebe uma expressão lambda que irá selecionar qual dado do model será exibido"*@
-            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
@@ -22,18 +19,15 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) { // "@foreach" monta um for para cada item dentro da coleção, no caso a coleção é "Model"
+@foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Id)
+                @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Name) @* "@Html.DisplayFor" exibirá os itens selecionados dentro do model percorrido pelo for *@
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>
         </tr>
 }

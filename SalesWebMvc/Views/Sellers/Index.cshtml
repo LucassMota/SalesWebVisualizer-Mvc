@@ -1,7 +1,60 @@
-﻿
-@{
-    ViewData["Title"] = "View";
-}
+﻿@* o objeto model corresponde ao objeto que foi passado ao método View, que é uma lista de Seller *@
+@* o IEnumerable é o tipo generico usado para aceitar todos os tipos de coleções como listas, conjuntos, etc.*@
 
-<h2>Sellers</h2>
+@model IEnumerable<SalesWebMvc.Models.Seller>
 
+    @{
+    ViewData["Title"] = "Sellers";
+    }
+
+    <h2>@ViewData["Title"]</h2>
+
+    <p>
+        <a asp-action="Create" class="btn btn-default">Create New</a>
+    </p>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr class="success">
+                <th>
+                    @Html.DisplayNameFor(model => model.Name) @* "DisplayNameFor" mostra a string ou o nome da propriedade na classe *@
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Email)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.BirthDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.BaseSalary)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BirthDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BaseSalary)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+
+            }
+        </tbody>
+
+    </table>

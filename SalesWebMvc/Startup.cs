@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
 using SalesWebMvc.Data;
 using SalesWebMvc.Services;
 
@@ -50,6 +52,14 @@ namespace SalesWebMvc
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, SeedingService seedingService)
         {
+            var enUS = new CultureInfo("en-US"); // "CultureInfo()" determina o locale que pode ser usado na aplicação, nesse caso o locale é o dos EUA 
+            var localizationOptions = new RequestLocalizationOptions // o objeto "RequestLocalizationOptions" determina as opções de locale
+            {
+                DefaultRequestCulture = new RequestCulture(enUS), // "RequestCulture()" define o locale usado na aplicação
+                SupportedCultures = new List<CultureInfo> { enUS },
+                SupportedUICultures = new List<CultureInfo> { enUS }
+            };
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using SalesWebMvc.Services;
+using Microsoft.AspNetCore.Mvc;
 using SalesWebMvc.Models;
 using SalesWebMvc.Models.ViewModels;
+using SalesWebMvc.Services;
 using SalesWebMvc.Services.Exceptions;
-using System.Diagnostics;
 
 namespace SalesWebMvc.Controllers
 {
@@ -22,38 +22,41 @@ namespace SalesWebMvc.Controllers
             _departmentService = departmentService;
         }
 
-        // Nota: O método abaixo demonstra bem o MVC acontecendo (ver próximos comentários)
-        public IActionResult Index() // O método dentro do controlador...
+        public async Task<IActionResult> Index()
         {
-            var list = _sellerService.FindAll(); // ...chama o model
-            return View(list); // ...que encaminha os dados para a view
+            var list = await _sellerService.FindAllAsync();
+            return View(list);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var departments = _departmentService.FindAll();
+            var departments = await _departmentService.FindAllAsync();
             var viewModel = new SellerFormViewModel { Departments = departments };
             return View(viewModel);
         }
 
-        [HttpPost] // como o "IActionResult Create" por padrão usa o método GET, usamos a annotation "[HttpPost]" para converter o método para POST
-        [ValidateAntiForgeryToken] // Previne contra ataques CSRF
-        public IActionResult Create(Seller seller)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Seller seller)
         {
-            _sellerService.Insert(seller);
-            return RedirectToAction(nameof(Index)); // "RedirectToAction" direciona a requisição para a ação especificada como argumento. Nesse caso é a ação "Index"
-                                                    //"nameof" aponta para a propriedade independente se esta mudar de nome
+            if (!ModelState.IsValid)
+            {
+                var departments = await _departmentService.FindAllAsync();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
+            }
+            await _sellerService.InsertAsync(seller);
+            return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
-            var obj = _sellerService.FindById(id.Value);
-            
+            var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
@@ -64,21 +67,27 @@ namespace SalesWebMvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            _sellerService.Remove(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _sellerService.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
         }
 
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
-            var obj = _sellerService.FindById(id.Value);
-
+            var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
@@ -87,44 +96,44 @@ namespace SalesWebMvc.Controllers
             return View(obj);
         }
 
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id not provided" }); ;
+                return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
-            var obj = _sellerService.FindById(id.Value);
-
+            var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
-            List<Department> departments = _departmentService.FindAll();
+            List<Department> departments = await _departmentService.FindAllAsync();
             SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
             return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Seller seller)
+        public async Task<IActionResult> Edit(int id, Seller seller)
         {
+            if (!ModelState.IsValid)
+            {
+                var departments = await _departmentService.FindAllAsync();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
+            }
             if (id != seller.Id)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id mismatch" });
             }
-
             try
             {
-                _sellerService.Update(seller);
+                await _sellerService.UpdateAsync(seller);
                 return RedirectToAction(nameof(Index));
             }
-            catch (NotFoundExceptions e)
-            {
-                return RedirectToAction(nameof(Error), new { message = e.Message });
-            }
-            catch (DbConcurrencyException e)
+            catch (ApplicationException e)
             {
                 return RedirectToAction(nameof(Error), new { message = e.Message });
             }
@@ -135,11 +144,9 @@ namespace SalesWebMvc.Controllers
             var viewModel = new ErrorViewModel
             {
                 Message = message,
-                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier // Esta linha de código é um macete para pegar o ID da requisição
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
             };
-
             return View(viewModel);
         }
     }
 }
-

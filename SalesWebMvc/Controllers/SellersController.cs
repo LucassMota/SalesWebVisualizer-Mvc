@@ -42,5 +42,30 @@ namespace SalesWebMvc.Controllers
             return RedirectToAction(nameof(Index)); // "RedirectToAction" direciona a requisição para a ação especificada como argumento. Nesse caso é a ação "Index"
                                                     //"nameof" aponta para a propriedade independente se esta mudar de nome
         }
+
+        public IActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var obj = _sellerService.FindById(id.Value);
+            
+            if (obj == null)
+            {
+                return NotFound();
+            }
+
+            return View(obj);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(int id)
+        {
+            _sellerService.Remove(id);
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
